@@ -250,7 +250,7 @@
 
   <div class="result" id="result"></div>
 
-  <p class="footer-note">🔒 Seus dados são usados apenas para <span>esta sessão</span>. Nunca compartilhados.</p>
+  <p class="footer-note">🔒 Seus dados de localização serão usados exclusivamente para <span>fins desta campanha</span>.</p>
 </div>
 
 <script>
@@ -273,12 +273,12 @@
         const acc = Math.round(pos.coords.accuracy);
         const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
 
-        // ✅ Aqui você envia para seu backend:
-        // fetch('/salvar-localizacao', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ lat, lon, accuracy: acc })
-        // });
+        // ✅ Enviando para Google Sheets
+        fetch('https://script.google.com/macros/s/AKfycbzHeS6v8Uq9_NCcu7-bGucsdVATabIO2LTDdXLQ0RJEYzVYFH-FuIo1AP6p6qF-LZFl/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat, lon, accuracy: acc })
+        }).catch(() => {}); // ignora erros de rede silenciosamente
 
         result.className = 'result success';
         result.innerHTML = `
