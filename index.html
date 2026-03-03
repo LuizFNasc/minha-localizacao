@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmar Localização</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050a0e;
+      --surface: #0d1b26;
+      --border: #1a3040;
+      --accent: #00e5ff;
+      --accent2: #00ffb3;
+      --text: #e8f4f8;
+      --muted: #5a7a8a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Animated background */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    .glow-orb {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    }
+
+    /* Card */
+    .card {
+      position: relative;
+      z-index: 10;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 56px 48px;
+      max-width: 460px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 0 80px rgba(0,229,255,0.08), 0 40px 80px rgba(0,0,0,0.6);
+      animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Icon */
+    .icon-wrap {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(0,255,179,0.1));
+      border: 1px solid rgba(0,229,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 32px;
+      animation: iconPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.3); }
+      50% { box-shadow: 0 0 0 16px rgba(0,229,255,0); }
+    }
+
+    .icon-wrap svg {
+      width: 36px;
+      height: 36px;
+    }
+
+    /* Text */
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.75rem;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--text) 40%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin-bottom: 36px;
+    }
+
+    /* Button */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #050a0e;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+      border: none;
+      border-radius: 12px;
+      padding: 16px 32px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,229,255,0.35);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn.loading { opacity: 0.7; cursor: not-allowed; }
+
+    /* Result box */
+    .result {
+      margin-top: 24px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      display: none;
+      text-align: left;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .result.success {
+      background: rgba(0,255,179,0.08);
+      border: 1px solid rgba(0,255,179,0.3);
+      color: var(--accent2);
+      display: block;
+    }
+
+    .result.error {
+      background: rgba(255,80,80,0.08);
+      border: 1px solid rgba(255,80,80,0.3);
+      color: #ff8080;
+      display: block;
+    }
+
+    .result-label {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+
+    .coords { font-size: 1rem; font-weight: 500; margin-top: 6px; }
+
+    .map-link {
+      display: inline-block;
+      margin-top: 12px;
+      color: var(--accent);
+      font-size: 0.82rem;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(0,229,255,0.3);
+      transition: opacity 0.2s;
+    }
+    .map-link:hover { opacity: 0.7; }
+
+    /* Footer */
+    .footer-note {
+      margin-top: 28px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      opacity: 0.6;
+    }
+    .footer-note span { color: var(--accent); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="glow-orb"></div>
+
+<div class="card">
+  <div class="icon-wrap">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="url(#grad)"/>
+      <circle cx="12" cy="9" r="2.5" fill="#050a0e"/>
+      <defs>
+        <linearGradient id="grad" x1="5" y1="2" x2="19" y2="22" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#00e5ff"/>
+          <stop offset="100%" stop-color="#00ffb3"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <h1>Confirmar Localização</h1>
+  <p>Para continuar, precisamos verificar sua localização atual. Clique no botão abaixo e permita o acesso quando solicitado pelo navegador.</p>
+
+  <button class="btn" id="btn" onclick="getLocation()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" fill="currentColor"/>
+    </svg>
+    Permitir minha localização
+  </button>
+
+  <div class="result" id="result"></div>
+
+  <p class="footer-note">🔒 Seus dados são usados apenas para <span>esta sessão</span>. Nunca compartilhados.</p>
+</div>
+
+<script>
+  function getLocation() {
+    const btn = document.getElementById('btn');
+    const result = document.getElementById('result');
+
+    if (!navigator.geolocation) {
+      showError('Seu navegador não suporta geolocalização.');
+      return;
+    }
+
+    btn.classList.add('loading');
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Obtendo localização...`;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        const acc = Math.round(pos.coords.accuracy);
+        const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+
+        // ✅ Aqui você envia para seu backend:
+        // fetch('/salvar-localizacao', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({ lat, lon, accuracy: acc })
+        // });
+
+        result.className = 'result success';
+        result.innerHTML = `
+          <div class="result-label">✓ Localização obtida</div>
+          <div class="coords">📍 ${lat}, ${lon}</div>
+          <div style="margin-top:4px;font-size:0.8rem;opacity:0.7">Precisão: ±${acc}m</div>
+          <a class="map-link" href="${mapsUrl}" target="_blank">→ Ver no Google Maps</a>
+        `;
+
+        btn.innerHTML = `✓ Localização confirmada`;
+        btn.style.background = 'linear-gradient(135deg, #00ffb3, #00e5ff)';
+      },
+      (err) => {
+        const msgs = {
+          1: 'Permissão negada. Por favor, permita o acesso à localização nas configurações do navegador.',
+          2: 'Não foi possível determinar sua localização. Tente novamente.',
+          3: 'Tempo esgotado. Tente novamente.'
+        };
+        showError(msgs[err.code] || 'Erro desconhecido.');
+        btn.classList.remove('loading');
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" fill="currentColor"/></svg> Tentar novamente`;
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
+  function showError(msg) {
+    const result = document.getElementById('result');
+    result.className = 'result error';
+    result.innerHTML = `<div class="result-label">⚠ Erro</div><div style="margin-top:4px">${msg}</div>`;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
+  document.head.appendChild(style);
+</script>
+</body>
+</html>
